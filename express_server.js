@@ -60,7 +60,6 @@ app.post("/urls", (req, res) => {
   urlDatabase[shortURL] = longURL;
   // console.log(urlDatabase);
   res.redirect(`/urls/${shortURL}`);
-  // res.send(generateRandomString());         // Respond with 'Ok' (we will replace this)
 });
 
 // using ejs template + req.params to /urls:shortUrl route
@@ -74,6 +73,16 @@ app.get('/urls/:shortURL', (req, res) => {
 app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL];
   res.redirect(longURL);
+});
+
+// Editing a url entry
+// POST /urls/:id
+app.post('/urls/:shortURL', (req, res) => {
+  const longURL = req.body.newLongURL;
+  const shortURL = req.params.shortURL;
+  urlDatabase[shortURL] = longURL;
+  // console.log(urlDatabase);
+  res.redirect('/urls');
 });
 
 // Deleting a url entry
