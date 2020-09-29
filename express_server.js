@@ -25,6 +25,13 @@ app.get('/hello', (req, res) => {
   res.send('<html><body>Hello <b>World</b></body></html>\n');
 });
 
+// using ejs templatet to /urls route
+app.get('/urls', (req, res) => {
+  const templateVars = { urls: urlDatabase };
+  // console.log(templateVars); // including this to understand the code - to be deleted later
+  res.render('urls_index', templateVars);
+})
+
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
