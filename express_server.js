@@ -2,6 +2,7 @@ const express = require('express');
 const app = express();
 const PORT = 8080;
 const bodyParser = require('body-parser');
+const { response } = require('express');
 
 // this will convert request body data from buffer to string we can read
 app.use(bodyParser.urlencoded({extended: true}));
@@ -22,7 +23,7 @@ function generateRandomString() {
   return result;
 };
 
-generateRandomString();
+// generateRandomString();
 
 // sending a string
 app.get('/', (req, res) => {
@@ -53,13 +54,18 @@ app.get('/urls/new', (req, res) => {
 
 // submitting form at urls/new and posting response
 app.post("/urls", (req, res) => {
-  console.log(req.body);  // Log the POST request body to the console
-  res.send("Ok");         // Respond with 'Ok' (we will replace this)
+  // console.log(req.body);  // Log the POST request body to the console
+  const longURL = req.body.longURL;
+  const shortURL = generateRandomString();
+  urlDatabase[shortURL] = longURL;
+  // console.log(urlDatabase);
+  res.redirect(`/urls/${shortURL}`);
+  // res.send(generateRandomString());         // Respond with 'Ok' (we will replace this)
 });
 
 // using ejs template + req.params to /urls:shortUrl route
 app.get('/urls/:shortURL', (req, res) => {
-  const templateVars = { shortURL: req.params.shortURL, longUrl: urlDatabase[req.params.shortURL] };
+  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
   // console.log(templateVars); // including this to understand the code - to be deleted later
   res.render('urls_show', templateVars);
 });
