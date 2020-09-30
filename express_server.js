@@ -22,19 +22,7 @@ const urlDatabase = {
 };
 
 // user database object - we're not working with actual databases yet
-const users = { 
-//   "userRandomID": {
-//     id: "userRandomID", 
-//     email: "user@example.com", 
-//     password: "purple-monkey-dinosaur"
-//   },
-//  "user2RandomID": {
-//     id: "user2RandomID", 
-//     email: "user2@example.com", 
-//     password: "dishwasher-funk"
-//   }
-};
-
+const users = {};
 
 // this function generates a random six string alphanumeric characters
 function generateRandomString() {
@@ -43,7 +31,7 @@ function generateRandomString() {
   return result;
 };
 
-// generateRandomString();
+// generateRandomString(); // testing
 
 // sending a string - this was just a test
 // app.get('/', (req, res) => {
@@ -63,7 +51,7 @@ app.get('/urls.json', (req, res) => {
 // using ejs template to /urls route
 app.get('/urls', (req, res) => {
   const templateVars = { 
-    username: req.cookies['username'],
+    user: users[req.cookies['user_id']],
     urls: urlDatabase };
   // console.log(templateVars); // including this to understand the code - to be deleted later
   res.render('urls_index', templateVars);
@@ -72,7 +60,7 @@ app.get('/urls', (req, res) => {
 // routing to get the form for new urls
 app.get('/urls/new', (req, res) => {
   const templateVars = {
-    username: req.cookies['username']
+    user: users[req.cookies['user_id']]
   }
   res.render('urls_new', templateVars);
 });
@@ -80,7 +68,7 @@ app.get('/urls/new', (req, res) => {
 // routing to register as a user
 app.get('/register', (req, res) => {
   const templateVars = {
-    username: req.cookies['username']
+    user: users[req.cookies['user_id']]
   }
   res.render('urls_register', templateVars);
 });
@@ -98,7 +86,7 @@ app.post("/urls", (req, res) => {
 // using ejs template + req.params to /urls:shortUrl route
 app.get('/urls/:shortURL', (req, res) => {
   const templateVars = { 
-    username: req.cookies['username'],
+    user: users[req.cookies['user_id']],
     shortURL: req.params.shortURL, 
     longURL: urlDatabase[req.params.shortURL] };
   // console.log(templateVars); // including this to understand the code - to be deleted later
@@ -118,6 +106,24 @@ app.post('/urls/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
   urlDatabase[shortURL] = longURL;
   // console.log(urlDatabase);
+  res.redirect('/urls');
+});
+
+// Register a new user
+app.post('/register', (req, res) => {
+  // console.log(users); // testing - to be deleted later
+  const id = generateRandomString();
+  const email = req.body.email;
+  const password = req.body.password;
+  users[id] = { id, email, password };
+  res.cookie('user_id', id);
+  // MENTOR ASSISTANCE HERE
+  // console.log('----------------')
+  // console.log(req.cookies['user_id']); // it has to come from a request method which had previous/empty cookie
+  // console.log('----------------')
+  // console.log(users); // testing - to be deleted later
+  // console.log('----------------')
+  // console.log(users[req.cookies['user_id']]); // testing - to be deleted later
   res.redirect('/urls');
 });
 
