@@ -4,6 +4,7 @@ const PORT = 8080;
 const bodyParser = require('body-parser');
 const { response } = require('express'); // what is this??
 const cookieParser = require('cookie-parser');
+const { compareEmail, generateRandomString } = require('./helpers');
 
 // this will convert request body data from buffer to string we can read
 app.use(bodyParser.urlencoded({extended: true}));
@@ -23,13 +24,6 @@ const urlDatabase = {
 
 // user database object - we're not working with actual databases yet
 const users = {};
-
-// this function generates a random six string alphanumeric characters
-function generateRandomString() {
-  const result = Math.random().toString(36).substring(2,8);
-  // console.log(result);
-  return result;
-};
 
 // generateRandomString(); // testing
 
@@ -112,19 +106,30 @@ app.post('/urls/:shortURL', (req, res) => {
 // Register a new user
 app.post('/register', (req, res) => {
   // console.log(users); // testing - to be deleted later
-  const id = generateRandomString();
-  const email = req.body.email;
-  const password = req.body.password;
-  users[id] = { id, email, password };
-  res.cookie('user_id', id);
-  // MENTOR ASSISTANCE HERE
-  // console.log('----------------')
-  // console.log(req.cookies['user_id']); // it has to come from a request method which had previous/empty cookie
-  // console.log('----------------')
-  // console.log(users); // testing - to be deleted later
-  // console.log('----------------')
-  // console.log(users[req.cookies['user_id']]); // testing - to be deleted later
-  res.redirect('/urls');
+  if (!req.body.email || !req.body.password) {
+    res.status(400).send('Please do not leave any fields empty');
+  } else {
+
+    // check if the email already exists
+    
+    if(compareEmail(users, req.body.email)) {
+      res.status(400).send('This email is already registered.\nPlease login or register with a new email.');
+    } else {
+      const id = generateRandomString();
+      const email = req.body.email;
+      const password = req.body.password;
+      users[id] = { id, email, password };
+      res.cookie('user_id', id);
+      // MENTOR ASSISTANCE HERE
+      // console.log('----------------')
+      // console.log(req.cookies['user_id']); // it has to come from a request method which had previous/empty cookie
+      // console.log('----------------')
+      // console.log(users); // testing - to be deleted later
+      // console.log('----------------')
+      // console.log(users[req.cookies['user_id']]); // testing - to be deleted later
+      res.redirect('/urls');
+    }
+  }
 });
 
 // Login with username and set cookie
