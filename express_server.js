@@ -11,14 +11,30 @@ app.use(bodyParser.urlencoded({extended: true}));
 // this will populate req.cookies object in key-value pairs
 app.use(cookieParser());
 
-
 // setting ejs as a template engine
 app.set('view engine', 'ejs');
 
+
+// url database object - we're not working with actual databases yet
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
+
+// user database object - we're not working with actual databases yet
+const users = { 
+//   "userRandomID": {
+//     id: "userRandomID", 
+//     email: "user@example.com", 
+//     password: "purple-monkey-dinosaur"
+//   },
+//  "user2RandomID": {
+//     id: "user2RandomID", 
+//     email: "user2@example.com", 
+//     password: "dishwasher-funk"
+//   }
+};
+
 
 // this function generates a random six string alphanumeric characters
 function generateRandomString() {
@@ -59,6 +75,14 @@ app.get('/urls/new', (req, res) => {
     username: req.cookies['username']
   }
   res.render('urls_new', templateVars);
+});
+
+// routing to register as a user
+app.get('/register', (req, res) => {
+  const templateVars = {
+    username: req.cookies['username']
+  }
+  res.render('urls_register', templateVars);
 });
 
 // submitting form at urls/new and posting response
