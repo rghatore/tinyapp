@@ -62,9 +62,18 @@ app.get('/urls/new', (req, res) => {
 // routing to register as a user
 app.get('/register', (req, res) => {
   const templateVars = {
-    user: users[req.cookies['user_id']]
+    user: users[req.cookies['user_id']],
+    // page: 'register' // do not use the same template for login - makes it more complicated instead
   }
   res.render('urls_register', templateVars);
+});
+
+// routing to register as a user
+app.get('/login', (req, res) => {
+  const templateVars = {
+    user: users[req.cookies['user_id']],
+  }
+  res.render('urls_login', templateVars);
 });
 
 // submitting form at urls/new and posting response
@@ -141,6 +150,7 @@ app.post('/login', (req, res) => {
 // Logout the user and clear cookie
 app.post('/logout', (req, res) => {
   res.clearCookie('username');
+  res.clearCookie('user_id');
   res.redirect('/urls');
 })
 
