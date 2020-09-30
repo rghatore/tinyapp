@@ -4,7 +4,7 @@ const PORT = 8080;
 const bodyParser = require('body-parser');
 const { response } = require('express'); // what is this??
 const cookieParser = require('cookie-parser');
-const { compareEmail, generateRandomString } = require('./helpers');
+const { compareEmail, comparePassword, generateRandomString } = require('./helpers');
 
 // this will convert request body data from buffer to string we can read
 app.use(bodyParser.urlencoded({extended: true}));
@@ -133,7 +133,7 @@ app.post('/register', (req, res) => {
       // console.log('----------------')
       // console.log(req.cookies['user_id']); // it has to come from a request method which had previous/empty cookie
       // console.log('----------------')
-      // console.log(users); // testing - to be deleted later
+      // console.log('users obj: ', users); // testing - to be deleted later
       // console.log('----------------')
       // console.log(users[req.cookies['user_id']]); // testing - to be deleted later
       res.redirect('/urls');
@@ -143,13 +143,22 @@ app.post('/register', (req, res) => {
 
 // Login with username and set cookie
 app.post('/login', (req, res) => {
-  res.cookie('username', req.body.username);
-  res.redirect('/urls');
-})
+  // res.cookie('username', req.body.username); // not using it anymore
+  const user = compareEmail(users, req.body.email);  
+  if (!user) {
+    res.status(403).send('Please register')
+  } else if (!comparePassword(users, user, req.body.password)) {
+    res.status(403).send('Please check your password')
+  } else {
+    res.cookie('user_id', users[user].id);
+    // console.log('user id: ', user); // testing - user is the same as user[user].id
+    res.redirect('/urls');
+  }
+});
 
 // Logout the user and clear cookie
 app.post('/logout', (req, res) => {
-  res.clearCookie('username');
+  // res.clearCookie('username'); // not using it anymore
   res.clearCookie('user_id');
   res.redirect('/urls');
 })

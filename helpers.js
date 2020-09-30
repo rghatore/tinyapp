@@ -8,16 +8,26 @@ function generateRandomString() {
 };
 
 // this function checks if the registration email alreay exists in the database
+// returns the userID if found. otherwise, null.
 const compareEmail = (list, regEmail) => {
   for (const user in list) {
     // console.log('USER: ', user);
     // console.log('user.email: ', list[user].email); // this is where I had trouble!
     // console.log('regEmail: ', regEmail);
     if (list[user].email === regEmail) {
-      return true;
+      return user;
     }
   }
   return null;
 };
 
-module.exports = { compareEmail, generateRandomString };
+// this functoin check if the password provided matches the password saved
+const comparePassword = (list, user, regPassword) => {
+  if(list[user].password === regPassword) {
+    return true;
+  } else {
+    return null;
+  }
+};
+
+module.exports = { compareEmail, comparePassword, generateRandomString };
