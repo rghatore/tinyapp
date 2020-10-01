@@ -8,14 +8,15 @@ function generateRandomString() {
   return result;
 };
 
-// this function checks if the registration email alreay exists in the database
+// this function checks if the registration or login email alreay exists in the database
 // returns the userID if found. otherwise, null.
-const compareEmail = (list, regEmail) => {
+// same as getUsersByEmail function
+const compareEmail = (list, userEmail) => {
   for (const user in list) {
     // console.log('USER: ', user);
     // console.log('user.email: ', list[user].email); // this is where I had trouble!
     // console.log('regEmail: ', regEmail);
-    if (list[user].email === regEmail) {
+    if (list[user].email === userEmail) {
       return user;
     }
   }

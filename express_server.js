@@ -3,9 +3,11 @@ const app = express();
 const PORT = 8080;
 const bodyParser = require('body-parser');
 const { response } = require('express'); // what is this??
-const cookieParser = require('cookie-parser');
+// const cookieParser = require('cookie-parser'); // don't need this anymore
 const bcrypt = require('bcrypt');
 const salt = bcrypt.genSaltSync(10);
+const cookieSession = require('cookie-session');
+
 
 const { compareEmail, comparePassword, generateRandomString, shortURLforUser, urlsForUser } = require('./helpers');
 
@@ -13,7 +15,13 @@ const { compareEmail, comparePassword, generateRandomString, shortURLforUser, ur
 app.use(bodyParser.urlencoded({extended: true}));
 
 // this will populate req.cookies object in key-value pairs
-app.use(cookieParser());
+// app.use(cookieParser());
+
+// this will encrypt our cookies
+app.use(cookieSession({
+  name: 'session',
+  keys: ['07d9531676240266356dfd935f762c6c', 'ff0570a4b7a91b5ae4e23bc35f762c8d'] // generated using dbus-uuidgen
+}));
 
 // setting ejs as a template engine
 app.set('view engine', 'ejs');
@@ -52,15 +60,17 @@ app.get('/urls.json', (req, res) => {
 
 // using ejs template to /urls route
 app.get('/urls', (req, res) => {
-  // console.log('cookie id :', req.cookies['user_id']); // testing
-  // console.log('users :', users); // testing
+  console.log('cookie id :', req.session['user_id']); // testing
+  console.log('users :', users); // testing
+  console.log('uslDatabase :', urlDatabase); // testing
   // console.log('user object: ', users[req.cookies['user_id']]); // testing
 
-  if (req.cookies['user_id']) {
-    const user = users[req.cookies['user_id']];
-    const urls = urlsForUser(urlDatabase, user.id);
+  if (req.session['user_id']) {
+    // const user = users[req.cookies['user_id']];
+    const user = req.session['user_id'];  // user is the same as users[user].id in our case
+    const urls = urlsForUser(urlDatabase, user);
     const templateVars = { user, urls };
-    // console.log('templateVars: ', templateVars); // including this to understand the code - to be deleted later
+    console.log('templateVars: ', templateVars); // including this to understand the code - to be deleted later
     res.render('urls_index', templateVars);
   } else {
     // res.send('Please register or login')
@@ -72,7 +82,8 @@ app.get('/urls', (req, res) => {
 // routing to get the form for new urls
 app.get('/urls/new', (req, res) => {
   const templateVars = {
-    user: users[req.cookies['user_id']]
+    // user: users[req.cookies['user_id']]
+    user: users[req.session['user_id']]
   }
 
   if (templateVars.user) {
@@ -85,7 +96,8 @@ app.get('/urls/new', (req, res) => {
 // routing to register as a user
 app.get('/register', (req, res) => {
   const templateVars = {
-    user: users[req.cookies['user_id']],
+    // user: users[req.cookies['user_id']]
+    user: users[req.session['user_id']]
     // page: 'register' // do not use the same template for login - makes it more complicated instead
   }
   res.render('urls_register', templateVars);
@@ -94,7 +106,8 @@ app.get('/register', (req, res) => {
 // routing to register as a user
 app.get('/login', (req, res) => {
   const templateVars = {
-    user: users[req.cookies['user_id']],
+    // user: users[req.cookies['user_id']]
+    user: users[req.session['user_id']]
   }
   res.render('urls_login', templateVars);
 });
@@ -103,18 +116,20 @@ app.get('/login', (req, res) => {
 app.post("/urls", (req, res) => {
   // console.log(req.body);  // Log the POST request body to the console
   const longURL = req.body.longURL;
-  const userID = req.cookies['user_id'];
+  // const userID = req.cookies['user_id'];
+  const userID = req.session['user_id'];
   const shortURL = generateRandomString();
 
   urlDatabase[shortURL] = { longURL, userID };
-  console.log(urlDatabase); // testing
+  // console.log(urlDatabase); // testing
   res.redirect(`/urls/${shortURL}`);
 });
 
 // using ejs template + req.params to /urls:shortUrl route
 app.get('/urls/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
-  const id = req.cookies['user_id'];
+  // const id = req.cookies['user_id'];
+  const id = req.session['user_id'];
   if (shortURLforUser(urlDatabase, shortURL, id)) {
     const templateVars = { 
       shortURL, 
@@ -138,7 +153,8 @@ app.get("/u/:shortURL", (req, res) => {
 // POST /urls/:id
 app.post('/urls/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
-  const id = req.cookies['user_id'];
+  // const id = req.cookies['user_id'];
+  const id = req.session['user_id'];
   if (shortURLforUser(urlDatabase, shortURL, id)) {
     const longURL = req.body.newLongURL;
     urlDatabase[shortURL].longURL = longURL;
@@ -170,12 +186,13 @@ app.post('/register', (req, res) => {
       // const password = req.body.password; // this is changed to hash
       const password = bcrypt.hashSync(req.body.password, salt);
       users[id] = { id, email, password };
-      res.cookie('user_id', id);
+      // res.cookie('user_id', id);
+      req.session['user_id'] = id;
       // MENTOR ASSISTANCE HERE
       // console.log('----------------')
       // console.log(req.cookies['user_id']); // it has to come from a request method which had previous/empty cookie
       // console.log('----------------')
-      console.log('users obj: ', users); // testing - to be deleted later
+      // console.log('users obj: ', users); // testing - to be deleted later
       // console.log('----------------')
       // console.log(users[req.cookies['user_id']]); // testing - to be deleted later
       res.redirect('/urls');
@@ -195,7 +212,8 @@ app.post('/login', (req, res) => {
     message = 'Please check your password';
     res.status(403).render('urls_error', { message, user: null });
   } else {
-    res.cookie('user_id', users[user].id);
+    // res.cookie('user_id', users[user].id);
+    req.session['user_id'] = users[user].id;
     // console.log('user id: ', user); // testing - user is the same as user[user].id
     res.redirect('/urls');
   }
@@ -204,7 +222,7 @@ app.post('/login', (req, res) => {
 // Logout the user and clear cookie
 app.post('/logout', (req, res) => {
   // res.clearCookie('username'); // not using it anymore
-  res.clearCookie('user_id');
+  req.session['user_id'] = "";
   res.redirect('/urls');
 })
 
@@ -212,7 +230,8 @@ app.post('/logout', (req, res) => {
 app.post('/urls/:shortURL/delete', (req, res) => {
   // console.log(req.params.shortURL);
   const shortURL = req.params.shortURL;
-  const id = req.cookies['user_id'];
+  // const id = req.cookies['user_id'];
+  const id = req.session['user_id'];
   if (shortURLforUser(urlDatabase, shortURL, id)) {
     delete urlDatabase[req.params.shortURL];
     res.redirect('/urls');
