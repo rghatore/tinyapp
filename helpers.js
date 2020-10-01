@@ -30,4 +30,25 @@ const comparePassword = (list, user, regPassword) => {
   }
 };
 
-module.exports = { compareEmail, comparePassword, generateRandomString };
+const urlsForUser = (list, id) => {
+  const userDatabase = {};
+  for (const shortURL in list) {
+    if (list[shortURL].userID === id) {
+      userDatabase[shortURL] = list[shortURL].longURL;
+    }
+  }
+  return userDatabase;
+};
+
+const shortURLforUser = (list, shortURL, id) => {
+  // const userDatabase = {};
+  if (list[shortURL] && (list[shortURL].userID === id)) {
+    // list[shortURL] = list[shortURL].longURL;
+    // return userDatabase;
+    return true;
+  } else {
+    return null;
+  }
+};
+
+module.exports = { compareEmail, comparePassword, generateRandomString, shortURLforUser, urlsForUser };
