@@ -1,4 +1,5 @@
 // Helper functions for the server
+const bcrypt = require('bcrypt');
 
 // this function generates a random six string alphanumeric characters
 function generateRandomString() {
@@ -22,12 +23,13 @@ const compareEmail = (list, regEmail) => {
 };
 
 // this functoin check if the password provided matches the password saved
-const comparePassword = (list, user, regPassword) => {
-  if(list[user].password === regPassword) {
-    return true;
-  } else {
-    return null;
-  }
+const comparePassword = (list, user, loginPassword) => {
+  // if(bcrypt.compareSync(loginPassword, list[user].password)) {
+    // return true;
+  // } else {
+    // return null;
+  // }
+  return (bcrypt.compareSync(loginPassword, list[user].password)) ? true : null;
 };
 
 // this function returns the list of urls (as an object) for a particular user

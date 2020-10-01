@@ -4,6 +4,9 @@ const PORT = 8080;
 const bodyParser = require('body-parser');
 const { response } = require('express'); // what is this??
 const cookieParser = require('cookie-parser');
+const bcrypt = require('bcrypt');
+const salt = bcrypt.genSaltSync(10);
+
 const { compareEmail, comparePassword, generateRandomString, shortURLforUser, urlsForUser } = require('./helpers');
 
 // this will convert request body data from buffer to string we can read
@@ -61,7 +64,9 @@ app.get('/urls', (req, res) => {
     res.render('urls_index', templateVars);
   } else {
     // res.send('Please register or login')
-    res.status(403).render('urls_home', { user: null });  }
+    message = 'Please register or login';
+    res.status(403).render('urls_error', { message, user: null });
+  }
 });
 
 // routing to get the form for new urls
@@ -118,7 +123,8 @@ app.get('/urls/:shortURL', (req, res) => {
     // console.log(templateVars); // including this to understand the code - to be deleted later
     res.render('urls_show', templateVars);
   } else {
-    res.status(403).render('urls_home', { user: null });  }
+    message = 'Please register or login';
+    res.status(403).render('urls_error', { message, user: null });  }
 });
 
 // redirecting to the website from a shortURL
@@ -140,31 +146,36 @@ app.post('/urls/:shortURL', (req, res) => {
     res.redirect('/urls');
   } else {
     // res.redirect('/urls/shortURL');
-    res.status(403).render('urls_home', { user: null });  }
+    message = 'Please register or login';
+    res.status(403).render('urls_error', { message, user: null });
+  }
 });
 
 // Register a new user
 app.post('/register', (req, res) => {
   // console.log(users); // testing - to be deleted later
   if (!req.body.email || !req.body.password) {
-    res.status(400).send('Please do not leave any fields empty');
+    message = 'Please do not leave any fields empty';
+    res.status(400).render('urls_error', { message, user: null });
   } else {
 
     // check if the email already exists
     
     if(compareEmail(users, req.body.email)) {
-      res.status(400).send('This email is already registered.\nPlease login or register with a new email.');
+      message = 'This email is already registered.\nPlease login or register with a new email.';
+      res.status(400).render('urls_error', { message, user: null });
     } else {
       const id = generateRandomString();
       const email = req.body.email;
-      const password = req.body.password;
+      // const password = req.body.password; // this is changed to hash
+      const password = bcrypt.hashSync(req.body.password, salt);
       users[id] = { id, email, password };
       res.cookie('user_id', id);
       // MENTOR ASSISTANCE HERE
       // console.log('----------------')
       // console.log(req.cookies['user_id']); // it has to come from a request method which had previous/empty cookie
       // console.log('----------------')
-      // console.log('users obj: ', users); // testing - to be deleted later
+      console.log('users obj: ', users); // testing - to be deleted later
       // console.log('----------------')
       // console.log(users[req.cookies['user_id']]); // testing - to be deleted later
       res.redirect('/urls');
@@ -176,10 +187,13 @@ app.post('/register', (req, res) => {
 app.post('/login', (req, res) => {
   // res.cookie('username', req.body.username); // not using it anymore
   const user = compareEmail(users, req.body.email);  
+  // const password = bcrypt.hashSync(req.body.password, salt); // DO NOT USE THIS hashed password
   if (!user) {
-    res.status(403).send('Please register')
+    message = 'Please register';
+    res.status(403).render('urls_error', { message, user: null });
   } else if (!comparePassword(users, user, req.body.password)) {
-    res.status(403).send('Please check your password')
+    message = 'Please check your password';
+    res.status(403).render('urls_error', { message, user: null });
   } else {
     res.cookie('user_id', users[user].id);
     // console.log('user id: ', user); // testing - user is the same as user[user].id
@@ -203,7 +217,8 @@ app.post('/urls/:shortURL/delete', (req, res) => {
     delete urlDatabase[req.params.shortURL];
     res.redirect('/urls');
   } else {
-    res.status(403).render('urls_home', { user: null });
+    message = 'Please register or login';
+    res.status(403).render('urls_error', { message, user: null }); // name it error
   }
   
 });
