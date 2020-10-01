@@ -30,6 +30,7 @@ const comparePassword = (list, user, regPassword) => {
   }
 };
 
+// this function returns the list of urls (as an object) for a particular user
 const urlsForUser = (list, id) => {
   const userDatabase = {};
   for (const shortURL in list) {
@@ -40,15 +41,19 @@ const urlsForUser = (list, id) => {
   return userDatabase;
 };
 
+// this function return true or false if the shortURLs userID key matches the cookie userID
 const shortURLforUser = (list, shortURL, id) => {
   // const userDatabase = {};
-  if (list[shortURL] && (list[shortURL].userID === id)) {
-    // list[shortURL] = list[shortURL].longURL;
-    // return userDatabase;
-    return true;
-  } else {
-    return null;
-  }
+  // if (list[shortURL] && (list[shortURL].userID === id)) {
+  //   // list[shortURL] = list[shortURL].longURL;
+  //   // return userDatabase;
+  //   return true;
+  // } else {
+  //   return null;
+    
+  // }
+  return (list[shortURL] && (list[shortURL].userID === id)) ? true : false;
+
 };
 
 module.exports = { compareEmail, comparePassword, generateRandomString, shortURLforUser, urlsForUser };
