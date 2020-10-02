@@ -2,9 +2,8 @@
 const bcrypt = require('bcrypt');
 
 // this function generates a random six string alphanumeric characters
-function generateRandomString() {
+const generateRandomString = () => {
   const result = Math.random().toString(36).substring(2,8);
-  // console.log(result);
   return result;
 };
 
@@ -13,9 +12,6 @@ function generateRandomString() {
 // same as getUsersByEmail function
 const compareEmail = (list, userEmail) => {
   for (const user in list) {
-    // console.log('USER: ', user);
-    // console.log('user.email: ', list[user].email); // this is where I had trouble!
-    // console.log('regEmail: ', regEmail);
     if (list[user].email === userEmail) {
       return user;
     }
@@ -25,11 +21,6 @@ const compareEmail = (list, userEmail) => {
 
 // this functoin check if the password provided matches the password saved
 const comparePassword = (list, user, loginPassword) => {
-  // if(bcrypt.compareSync(loginPassword, list[user].password)) {
-    // return true;
-  // } else {
-    // return null;
-  // }
   return (bcrypt.compareSync(loginPassword, list[user].password)) ? true : null;
 };
 
@@ -46,17 +37,7 @@ const urlsForUser = (list, id) => {
 
 // this function return true or false if the shortURLs userID key matches the cookie userID
 const shortURLforUser = (list, shortURL, id) => {
-  // const userDatabase = {};
-  // if (list[shortURL] && (list[shortURL].userID === id)) {
-  //   // list[shortURL] = list[shortURL].longURL;
-  //   // return userDatabase;
-  //   return true;
-  // } else {
-  //   return null;
-    
-  // }
   return (list[shortURL] && (list[shortURL].userID === id)) ? true : false;
-
 };
 
 module.exports = { compareEmail, comparePassword, generateRandomString, shortURLforUser, urlsForUser };
