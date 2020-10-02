@@ -144,6 +144,7 @@ app.get('/urls/:shortURL', (req, res) => {
 
 // redirecting to the website from a shortURL
 app.get("/u/:shortURL", (req, res) => {
+  console.log('urlDATA:', urlDatabase);
   const shortURL = req.params.shortURL;
   const longURL = urlDatabase[shortURL].longURL;
   res.redirect(longURL);
